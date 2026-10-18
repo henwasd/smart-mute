@@ -20,7 +20,7 @@
     "message": "Exceções"
   },
   "exceptionsDesc": {
-    "message": "URLs ou domínios que <span style='font-weight:bold; color:#00f3ff;'>nunca</span> serão mutados automaticamente:"
+    "message": "URLs ou domínios <span style='font-weight:bold; color:#00f3ff;'>ignorados</span> (nunca são mutados e não mutam outros sites):"
   },
   "placeholderInput": {
     "message": "Ex: youtube.com"

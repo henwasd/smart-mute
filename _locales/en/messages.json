@@ -20,7 +20,7 @@
     "message": "Exceptions"
   },
   "exceptionsDesc": {
-    "message": "URLs or domains that will <span style='font-weight:bold; color:#00f3ff;'>never</span> be muted automatically:"
+    "message": "URLs or domains <span style='font-weight:bold; color:#00f3ff;'>ignored</span> (never muted and never mute other sites):"
   },
   "placeholderInput": {
     "message": "Ex: youtube.com"

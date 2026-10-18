@@ -10,7 +10,7 @@ If you open a new tab from the *same site* that is already playing audio, it wil
 ## Features
 - 🎧 **Smart Domain Muting:** Mutes old tabs from the same domain when a new one starts playing.
 - 🌐 **Different Site Respect:** Allows you to keep background music (e.g., Spotify) playing while watching a video on another site (e.g., YouTube). (Can be toggled off for strict silence).
-- 🛡️ **Unlimited Exceptions:** Add as many websites as you want to a whitelist that will *never* be auto-muted.
+- 🛡️ **Unlimited Exceptions:** Add as many websites as you want to an exceptions list so they are completely ignored (never auto-muted and never mute other tabs when playing audio).
 - ⚡ **Quick Toggle:** Turn the extension on or off with a single click.
 - 🎨 **Cyberpunk UI:** A sleek, modern dark mode with neon accents.
 - 🌍 **i18n Support:** Available in English and Portuguese (Brazil).

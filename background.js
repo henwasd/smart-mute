@@ -8,18 +8,32 @@ function getDomain(url) {
 }
 
 // Check if a URL matches any pattern in the whitelist
+function matchesWhitelist(url, whitelist) {
+  if (!url || !Array.isArray(whitelist)) return false;
+  const lowerUrl = url.toLowerCase();
+  return whitelist.some(pattern => pattern && lowerUrl.includes(pattern.toLowerCase()));
+}
+
 async function isWhitelisted(url) {
   const data = await chrome.storage.local.get({ whitelist: [] });
-  const whitelist = data.whitelist;
-  return whitelist.some(pattern => url.includes(pattern));
+  return matchesWhitelist(url, data.whitelist);
 }
 
 // Main logic to mute other tabs of the same domain
 async function handleAudioTabChange(targetTab) {
-  const data = await chrome.storage.local.get({ extensionEnabled: true, allowDifferentSites: true });
+  const data = await chrome.storage.local.get({
+    extensionEnabled: true,
+    allowDifferentSites: true,
+    whitelist: []
+  });
   if (!data.extensionEnabled) return;
 
   if (!targetTab.url) return;
+
+  // Sites in the exceptions list do not participate in the extension:
+  // they never mute other tabs when playing audio and are never muted.
+  if (matchesWhitelist(targetTab.url, data.whitelist)) return;
+
   const targetDomain = getDomain(targetTab.url);
   if (!targetDomain && data.allowDifferentSites) return;
 
@@ -27,22 +41,20 @@ async function handleAudioTabChange(targetTab) {
   
   // 1. Check if there's an active audible tab that should take precedence
   if (!targetTab.active) {
-    const whitelistedTrigger = await isWhitelisted(targetTab.url);
-    if (!whitelistedTrigger) {
-      const conflictingActiveTab = allTabs.find(t => 
-        t.id !== targetTab.id && 
-        t.active && 
-        t.audible && 
-        (!data.allowDifferentSites || getDomain(t.url) === targetDomain)
-      );
-      
-      if (conflictingActiveTab) {
-        // If a background tab becomes audible but there's an active audible tab, mute the background one
-        if (!targetTab.mutedInfo || !targetTab.mutedInfo.muted) {
-          chrome.tabs.update(targetTab.id, { muted: true });
-        }
-        return;
+    const conflictingActiveTab = allTabs.find(t => 
+      t.id !== targetTab.id && 
+      t.active && 
+      t.audible && 
+      !matchesWhitelist(t.url, data.whitelist) &&
+      (!data.allowDifferentSites || getDomain(t.url) === targetDomain)
+    );
+    
+    if (conflictingActiveTab) {
+      // If a background tab becomes audible but there's an active audible tab, mute the background one
+      if (!targetTab.mutedInfo || !targetTab.mutedInfo.muted) {
+        chrome.tabs.update(targetTab.id, { muted: true });
       }
+      return;
     }
   }
 
@@ -54,6 +66,7 @@ async function handleAudioTabChange(targetTab) {
   // 3. Mute all other conflicting tabs
   for (const t of allTabs) {
     if (t.id === targetTab.id) continue;
+    if (matchesWhitelist(t.url, data.whitelist)) continue;
     
     const tDomain = getDomain(t.url);
     let shouldMute = false;
@@ -65,11 +78,8 @@ async function handleAudioTabChange(targetTab) {
     }
 
     if (shouldMute) {
-      const whitelisted = await isWhitelisted(t.url);
-      if (!whitelisted) {
-        if (!t.mutedInfo || !t.mutedInfo.muted) {
-          chrome.tabs.update(t.id, { muted: true });
-        }
+      if (!t.mutedInfo || !t.mutedInfo.muted) {
+        chrome.tabs.update(t.id, { muted: true });
       }
     }
   }

@@ -46,13 +46,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderList(whitelist);
 
   // Add new item
-  addButton.addEventListener('click', async () => {
+  async function addSite() {
     const val = input.value.trim();
     if (val && !whitelist.includes(val)) {
       whitelist.push(val);
       await chrome.storage.local.set({ whitelist });
       renderList(whitelist);
       input.value = '';
+    }
+  }
+
+  addButton.addEventListener('click', addSite);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      addSite();
     }
   });
 
